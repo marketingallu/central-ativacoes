@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect, useCallback } from 'react';
+import Image from 'next/image';
 import { Activation, ActivationType, TYPE_COLORS } from '@/lib/types';
 import DayPanel from './DayPanel';
 
@@ -75,6 +76,17 @@ export default function Calendar() {
       </header>
 
       <div className="p-4 max-w-5xl mx-auto">
+        <a href="https://allugator.com" target="_blank" rel="noopener noreferrer" className="block mb-4 rounded-xl overflow-hidden shadow-md hover:shadow-lg transition-shadow">
+          <Image
+            src="/banner-allu.png"
+            alt="allu - Todo lugar vira arquibancada"
+            width={1520}
+            height={500}
+            className="w-full h-auto object-cover"
+            priority
+          />
+        </a>
+
         <div className="grid grid-cols-7 mb-1">
           {WEEKDAYS.map(d => (
             <div key={d} className="text-center text-xs font-semibold text-gray-400 uppercase py-2">{d}</div>
