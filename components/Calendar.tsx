@@ -75,21 +75,21 @@ export default function Calendar() {
     const val = parseInt(goalDraft);
     setEditingGoalDate(null);
     setGoalDraft('');
-    savingGoalRef.current = false;
-    if (isNaN(val) || val < 0) return;
+    if (isNaN(val) || val < 0) { savingGoalRef.current = false; return; }
     if (val === 0) {
       setGoalsByDate(prev => { const next = { ...prev }; delete next[dateStr]; return next; });
     } else {
       setGoalsByDate(prev => ({ ...prev, [dateStr]: val }));
     }
-    const res = await fetch('/api/goals', {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ date: dateStr, goal: val }),
-    });
-    if (!res.ok) {
-      const err = await res.json().catch(() => ({}));
-      console.error('saveGoal failed:', err);
+    try {
+      const res = await fetch('/api/goals', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: dateStr, goal: val }),
+      });
+      if (!res.ok) console.error('saveGoal failed:', await res.text());
+    } finally {
+      savingGoalRef.current = false;
     }
   }
 
