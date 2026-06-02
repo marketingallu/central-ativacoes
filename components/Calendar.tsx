@@ -142,7 +142,7 @@ export default function Calendar() {
               alt="allu - Todo lugar vira arquibancada"
               width={1520}
               height={500}
-              className="w-full object-cover max-h-44"
+              className="w-full object-cover max-h-56 object-top"
               priority
             />
           </a>
