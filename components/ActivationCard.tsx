@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Activation, DispatchResult } from '@/lib/types';
 import TypeBadge from './TypeBadge';
+import Tooltip from './Tooltip';
 
 interface Props {
   activation: Activation;
@@ -9,13 +10,13 @@ interface Props {
   onDelete: (id: string) => void;
 }
 
-const resultFields: { key: keyof DispatchResult; label: string; decimal?: boolean }[] = [
-  { key: 'sent', label: 'Enviadas' },
-  { key: 'delivered', label: 'Entregues' },
-  { key: 'read', label: 'Lidas' },
-  { key: 'replied', label: 'Respondidas' },
-  { key: 'gross_sales', label: 'Vendas brutas (R$)', decimal: true },
-  { key: 'net_sales', label: 'Vendas líquidas (R$)', decimal: true },
+const resultFields: { key: keyof DispatchResult; label: string; decimal?: boolean; tip: string }[] = [
+  { key: 'sent',        label: 'Enviadas',              tip: 'Mensagens efetivamente enviadas pelo canal' },
+  { key: 'delivered',   label: 'Entregues',             tip: 'Mensagens que chegaram ao destinatário' },
+  { key: 'read',        label: 'Lidas',                 tip: 'Mensagens abertas/lidas pelo destinatário' },
+  { key: 'replied',     label: 'Respondidas',           tip: 'Destinatários que responderam a mensagem' },
+  { key: 'gross_sales', label: 'Vendas brutas (R$)',    tip: 'Valor total de vendas geradas por este disparo', decimal: true },
+  { key: 'net_sales',   label: 'Vendas líquidas (R$)',  tip: 'Valor líquido após descontos e devoluções', decimal: true },
 ];
 
 export default function ActivationCard({ activation: a, onEdit, onDelete }: Props) {
@@ -68,12 +69,22 @@ export default function ActivationCard({ activation: a, onEdit, onDelete }: Prop
         )}
       </div>
 
+      {a.is_fup && (
+        <div className="flex items-center gap-1.5 text-xs bg-purple-50 border border-purple-200 rounded-md px-2 py-1 w-fit">
+          <span>🔁</span>
+          <span className="font-medium text-purple-700">Follow up</span>
+          {a.fup_target_leads && <span className="text-purple-500">· {a.fup_target_leads}</span>}
+        </div>
+      )}
+
       {(a.segment || a.segment_volume || a.intercom_tag) && (
         <div className="flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-gray-500">
           {a.segment && <span>Seg: <strong className="text-[#2E2F39]">{a.segment}</strong></span>}
           {a.segment_volume && <span>Vol: <strong className="text-[#2E2F39]">{a.segment_volume.toLocaleString('pt-BR')}</strong></span>}
           {a.type === 'whatsapp' && a.segment_volume && (
-            <span>Custo: <strong className="text-[#2E2F39]">${(a.segment_volume * 0.06).toFixed(2)}</strong></span>
+            <Tooltip text="Custo estimado baseado no volume da lista (antes dos resultados reais)">
+              <span className="cursor-help">Custo est.: <strong className="text-[#2E2F39]">${(a.segment_volume * 0.06).toFixed(2)}</strong></span>
+            </Tooltip>
           )}
           {a.intercom_tag && <span>Tag: <strong className="text-[#2E2F39]">{a.intercom_tag}</strong></span>}
         </div>
@@ -89,27 +100,21 @@ export default function ActivationCard({ activation: a, onEdit, onDelete }: Prop
         </div>
       )}
 
-      {a.is_fup && (
-        <div className="flex items-center gap-1.5 text-xs bg-purple-50 border border-purple-200 rounded-md px-2 py-1 w-fit">
-          <span>🔁</span>
-          <span className="font-medium text-purple-700">Follow up</span>
-          {a.fup_target_leads && <span className="text-purple-500">· {a.fup_target_leads}</span>}
-        </div>
-      )}
-
       {a.coupon && (
         <div className="text-xs text-gray-500">Cupom: <strong className="text-[#2E2F39]">{a.coupon}</strong></div>
       )}
 
       {a.hubspot_flow_url && (
-        <a
-          href={a.hubspot_flow_url}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-600 hover:underline font-medium"
-        >
-          🔗 Fluxo HubSpot
-        </a>
+        <Tooltip text="Abrir fluxo de automação no HubSpot" position="right">
+          <a
+            href={a.hubspot_flow_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-600 hover:underline font-medium"
+          >
+            🔗 Fluxo HubSpot
+          </a>
+        </Tooltip>
       )}
 
       {copy && (
@@ -124,36 +129,44 @@ export default function ActivationCard({ activation: a, onEdit, onDelete }: Prop
       )}
 
       <div className="flex items-center gap-2 pt-1">
-        <button onClick={() => onEdit(a)} className="text-xs text-gray-500 hover:text-[#27AE60] flex items-center gap-1">
-          ✏️ Editar
-        </button>
-        <button
-          onClick={handleDelete}
-          className={`text-xs flex items-center gap-1 ${confirming ? 'text-red-600 font-semibold' : 'text-gray-500 hover:text-red-500'}`}
-        >
-          🗑 {confirming ? 'Confirmar exclusão?' : 'Deletar'}
-        </button>
+        <Tooltip text="Editar dados desta ativação">
+          <button onClick={() => onEdit(a)} className="text-xs text-gray-500 hover:text-[#27AE60] flex items-center gap-1">
+            ✏️ Editar
+          </button>
+        </Tooltip>
+        <Tooltip text={confirming ? 'Clique novamente para confirmar a exclusão' : 'Deletar esta ativação permanentemente'}>
+          <button
+            onClick={handleDelete}
+            className={`text-xs flex items-center gap-1 ${confirming ? 'text-red-600 font-semibold' : 'text-gray-500 hover:text-red-500'}`}
+          >
+            🗑 {confirming ? 'Confirmar exclusão?' : 'Deletar'}
+          </button>
+        </Tooltip>
         {confirming && (
           <button onClick={() => setConfirming(false)} className="text-xs text-gray-400 hover:text-gray-600">Cancelar</button>
         )}
       </div>
 
       <div className="border-t border-[#E5E7EB] pt-2">
-        <button
-          onClick={() => setShowResults(v => !v)}
-          className="text-xs font-medium flex items-center gap-1.5 text-gray-500 hover:text-[#27AE60]"
-        >
-          <span>📊 Resultados</span>
-          {hasResults && <span className="w-1.5 h-1.5 rounded-full bg-[#27AE60] inline-block" />}
-          <span className="text-gray-300">{showResults ? '▲' : '▼'}</span>
-        </button>
+        <Tooltip text="Inserir métricas reais do disparo: enviadas, entregues, lidas, respondidas e vendas" wide>
+          <button
+            onClick={() => setShowResults(v => !v)}
+            className="text-xs font-medium flex items-center gap-1.5 text-gray-500 hover:text-[#27AE60]"
+          >
+            <span>📊 Resultados</span>
+            {hasResults && <span className="w-1.5 h-1.5 rounded-full bg-[#27AE60] inline-block" />}
+            <span className="text-gray-300">{showResults ? '▲' : '▼'}</span>
+          </button>
+        </Tooltip>
 
         {showResults && (
           <div className="mt-2 space-y-2">
             <div className="grid grid-cols-2 gap-2">
-              {resultFields.map(({ key, label, decimal }) => (
+              {resultFields.map(({ key, label, decimal, tip }) => (
                 <div key={key}>
-                  <label className="text-[10px] text-gray-400 block mb-0.5">{label}</label>
+                  <Tooltip text={tip} position="top">
+                    <label className="text-[10px] text-gray-400 block mb-0.5 cursor-help">{label}</label>
+                  </Tooltip>
                   <input
                     type="number"
                     step={decimal ? '0.01' : '1'}
@@ -165,13 +178,15 @@ export default function ActivationCard({ activation: a, onEdit, onDelete }: Prop
                 </div>
               ))}
             </div>
-            <button
-              onClick={saveResults}
-              disabled={savingResults}
-              className="text-xs bg-[#27AE60] hover:bg-[#219653] text-white px-3 py-1.5 rounded font-medium disabled:opacity-60 transition-colors"
-            >
-              {savedResults ? '✓ Salvo!' : savingResults ? 'Salvando…' : 'Salvar resultados'}
-            </button>
+            <Tooltip text="Salva os resultados e atualiza os painéis de métricas" position="right">
+              <button
+                onClick={saveResults}
+                disabled={savingResults}
+                className="text-xs bg-[#27AE60] hover:bg-[#219653] text-white px-3 py-1.5 rounded font-medium disabled:opacity-60 transition-colors"
+              >
+                {savedResults ? '✓ Salvo!' : savingResults ? 'Salvando…' : 'Salvar resultados'}
+              </button>
+            </Tooltip>
           </div>
         )}
       </div>

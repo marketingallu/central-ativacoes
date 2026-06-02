@@ -4,6 +4,7 @@ import Image from 'next/image';
 import { Activation, ActivationType, TYPE_COLORS, TYPE_LABELS } from '@/lib/types';
 import DayPanel from './DayPanel';
 import StatsPanel from './StatsPanel';
+import Tooltip from './Tooltip';
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 const MONTHS = [
@@ -72,20 +73,28 @@ export default function Calendar() {
           <h1 className="text-base font-bold text-[#2E2F39] tracking-tight">Central de Ativações</h1>
         </div>
         <div className="flex items-center gap-2 flex-wrap justify-end">
-          <select value={period} onChange={e => setPeriod(e.target.value)} className={selectCls}>
-            <option value="month">Este mês</option>
-            <option value="all">Todo período</option>
-          </select>
-          <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className={selectCls}>
-            <option value="all">Todos os tipos</option>
-            {(Object.entries(TYPE_LABELS) as [ActivationType, string][]).map(([v, l]) => (
-              <option key={v} value={v}>{l}</option>
-            ))}
-          </select>
+          <Tooltip text="Filtra os painéis laterais pelo período selecionado" position="bottom">
+            <select value={period} onChange={e => setPeriod(e.target.value)} className={selectCls}>
+              <option value="month">Este mês</option>
+              <option value="all">Todo período</option>
+            </select>
+          </Tooltip>
+          <Tooltip text="Filtra os painéis laterais por tipo de canal de disparo" position="bottom">
+            <select value={typeFilter} onChange={e => setTypeFilter(e.target.value)} className={selectCls}>
+              <option value="all">Todos os tipos</option>
+              {(Object.entries(TYPE_LABELS) as [ActivationType, string][]).map(([v, l]) => (
+                <option key={v} value={v}>{l}</option>
+              ))}
+            </select>
+          </Tooltip>
           <div className="flex items-center gap-1 border border-[#E5E7EB] rounded-lg px-1">
-            <button onClick={prevMonth} className="w-7 h-7 flex items-center justify-center text-gray-500 hover:text-[#2E2F39] transition-colors">‹</button>
+            <Tooltip text="Mês anterior" position="bottom">
+              <button onClick={prevMonth} className="w-7 h-7 flex items-center justify-center text-gray-500 hover:text-[#2E2F39] transition-colors">‹</button>
+            </Tooltip>
             <span className="font-semibold text-[#2E2F39] w-36 text-center text-sm">{MONTHS[month]} {year}</span>
-            <button onClick={nextMonth} className="w-7 h-7 flex items-center justify-center text-gray-500 hover:text-[#2E2F39] transition-colors">›</button>
+            <Tooltip text="Próximo mês" position="bottom">
+              <button onClick={nextMonth} className="w-7 h-7 flex items-center justify-center text-gray-500 hover:text-[#2E2F39] transition-colors">›</button>
+            </Tooltip>
           </div>
         </div>
       </header>
@@ -102,7 +111,7 @@ export default function Calendar() {
               alt="allu - Todo lugar vira arquibancada"
               width={1520}
               height={500}
-              className="w-full h-auto object-cover"
+              className="w-full object-cover max-h-24"
               priority
             />
           </a>
@@ -121,45 +130,46 @@ export default function Calendar() {
               const types = Array.from(new Set(acts.map(a => a.type))) as ActivationType[];
               const isToday = dateStr === todayStr;
               const isSelected = dateStr === selectedDate;
+              const hasFup = acts.some(a => a.is_fup);
 
               return (
-                <button
-                  key={i}
-                  onClick={() => setSelectedDate(dateStr)}
-                  className={`h-24 p-2 rounded-lg border text-left flex flex-col transition-all ${
-                    isSelected
-                      ? 'border-[#27AE60] bg-[#f0faf4] shadow-md'
-                      : 'border-[#E5E7EB] bg-white hover:border-[#27AE60] hover:shadow-sm'
-                  }`}
-                >
-                  <span className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full mb-1 ${
-                    isToday ? 'bg-[#27AE60] text-white' : 'text-[#2E2F39]'
-                  }`}>
-                    {day}
-                  </span>
-
-                  {loading ? (
-                    acts.length === 0 && <div className="flex-1" />
-                  ) : (
-                    <div className="flex flex-wrap gap-0.5 mt-auto">
-                      {types.slice(0, 4).map(t => (
-                        <span key={t} className="w-2 h-2 rounded-full" style={{ backgroundColor: TYPE_COLORS[t] }} />
-                      ))}
-                      {types.length > 4 && <span className="text-[9px] text-gray-400">+{types.length - 4}</span>}
-                      {acts.length > 0 && <span className="text-[9px] text-gray-400 w-full">{acts.length} ativ.</span>}
-                    </div>
-                  )}
-                </button>
+                <Tooltip key={i} text={acts.length > 0 ? `${acts.length} ativação${acts.length > 1 ? 'ões' : ''}${hasFup ? ' (inclui FUP)' : ''}` : 'Sem ativações'} position="top">
+                  <button
+                    onClick={() => setSelectedDate(dateStr)}
+                    className={`h-24 p-2 rounded-lg border text-left flex flex-col transition-all w-full ${
+                      isSelected
+                        ? 'border-[#27AE60] bg-[#f0faf4] shadow-md'
+                        : 'border-[#E5E7EB] bg-white hover:border-[#27AE60] hover:shadow-sm'
+                    }`}
+                  >
+                    <span className={`text-xs font-semibold w-6 h-6 flex items-center justify-center rounded-full mb-1 ${
+                      isToday ? 'bg-[#27AE60] text-white' : 'text-[#2E2F39]'
+                    }`}>
+                      {day}
+                    </span>
+                    {!loading && (
+                      <div className="flex flex-wrap gap-0.5 mt-auto">
+                        {types.slice(0, 4).map(t => (
+                          <span key={t} className="w-2 h-2 rounded-full" style={{ backgroundColor: TYPE_COLORS[t] }} />
+                        ))}
+                        {types.length > 4 && <span className="text-[9px] text-gray-400">+{types.length - 4}</span>}
+                        {acts.length > 0 && <span className="text-[9px] text-gray-400 w-full">{acts.length} ativ.</span>}
+                      </div>
+                    )}
+                  </button>
+                </Tooltip>
               );
             })}
           </div>
 
           <div className="mt-4 flex flex-wrap gap-4 text-xs text-gray-500">
             {Object.entries(TYPE_COLORS).map(([type, color]) => (
-              <span key={type} className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-                {TYPE_LABELS[type as ActivationType]}
-              </span>
+              <Tooltip key={type} text={`Filtrar por ${TYPE_LABELS[type as ActivationType]}`} position="top">
+                <span className="flex items-center gap-1.5 cursor-default">
+                  <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
+                  {TYPE_LABELS[type as ActivationType]}
+                </span>
+              </Tooltip>
             ))}
           </div>
         </div>

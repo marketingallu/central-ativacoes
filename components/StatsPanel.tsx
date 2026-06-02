@@ -1,5 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
+import { InfoTip } from './Tooltip';
 
 interface Stats {
   activation_count: number;
@@ -40,10 +41,13 @@ const fmtBRL = (n: number) => Number(n || 0).toLocaleString('pt-BR', { style: 'c
 const pct = (part: number, total: number) => total > 0 ? ((part / total) * 100).toFixed(1) + '%' : '—';
 const sk = 'bg-gray-100 rounded animate-pulse h-5 w-24';
 
-function Block({ title, children }: { title: string; children: React.ReactNode }) {
+function Block({ title, tip, children }: { title: string; tip: string; children: React.ReactNode }) {
   return (
     <div className="bg-white rounded-xl border border-[#E5E7EB] p-4 shadow-sm">
-      <div className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-3">{title}</div>
+      <div className="flex items-center mb-3">
+        <span className="text-[10px] font-semibold text-gray-400 uppercase tracking-wider">{title}</span>
+        <InfoTip text={tip} />
+      </div>
       {children}
     </div>
   );
@@ -80,36 +84,56 @@ export default function StatsPanel({ month, typeFilter, period }: Props) {
       .finally(() => setLoading(false));
   }, [month, typeFilter, period]);
 
+  const totalBase = Number(stats.total_base || 0);
   const waSent = Number(stats.whatsapp_sent || 0);
   const costUSD = waSent * 0.06;
   const sentN = Number(stats.sent || 0);
   const fupSentN = Number(stats.fup_sent || 0);
+  const totalDispatches = sentN + fupSentN;
+  const avg = totalBase > 0 ? (totalDispatches / totalBase) : 0;
 
   return (
     <div className="space-y-3">
-      <Block title="Base endereçável">
-        {loading
-          ? <div className={sk} />
-          : <>
-              <div className="text-2xl font-bold text-[#2E2F39]">{fmt(stats.total_base)}</div>
-              <div className="text-xs text-gray-400 mt-0.5">{stats.activation_count} ativação{stats.activation_count !== 1 ? 'ões' : ''}</div>
-            </>
-        }
+
+      <Block title="Base endereçável" tip="Soma das pessoas únicas nas listas de segmento. FUPs não contam pois são da mesma base.">
+        {loading ? <div className={sk} /> : (
+          <>
+            <div className="text-2xl font-bold text-[#2E2F39]">{fmt(totalBase)}</div>
+            <div className="text-xs text-gray-400 mt-0.5">{stats.activation_count} ativação{stats.activation_count !== 1 ? 'ões' : ''}</div>
+          </>
+        )}
       </Block>
 
-      <Block title="Custo WhatsApp">
-        {loading
-          ? <div className={sk} />
-          : <>
-              <div className="text-2xl font-bold text-[#2E2F39]">${costUSD.toFixed(2)}</div>
-              <div className="text-xs text-gray-400 mt-0.5">
-                {fmt(waSent)} msgs enviadas × $0,06
-              </div>
-            </>
-        }
+      <Block title="Disparos realizados" tip="Total de mensagens efetivamente enviadas em todos os disparos (incluindo FUPs). Uma mesma pessoa pode ser contada mais de uma vez.">
+        {loading ? <div className={sk} /> : (
+          <>
+            <div className="text-2xl font-bold text-[#2E2F39]">{fmt(totalDispatches)}</div>
+            <div className="text-xs text-gray-400 mt-0.5">
+              {fmt(sentN)} regulares + {fmt(fupSentN)} FUPs
+            </div>
+          </>
+        )}
       </Block>
 
-      <Block title="Métricas de disparos">
+      <Block title="Média de disparos / pessoa" tip="Disparos realizados ÷ Base endereçável. Indica quantas vezes, em média, cada pessoa da base foi contactada.">
+        {loading ? <div className={sk} /> : (
+          <>
+            <div className="text-2xl font-bold text-[#2E2F39]">{totalBase > 0 ? avg.toFixed(2) : '—'}</div>
+            <div className="text-xs text-gray-400 mt-0.5">{fmt(totalDispatches)} ÷ {fmt(totalBase)}</div>
+          </>
+        )}
+      </Block>
+
+      <Block title="Custo WhatsApp" tip="Baseado apenas nas mensagens efetivamente enviadas (campo 'Enviadas' dos resultados) × $0,06. Não usa o volume planejado da base.">
+        {loading ? <div className={sk} /> : (
+          <>
+            <div className="text-2xl font-bold text-[#2E2F39]">${costUSD.toFixed(2)}</div>
+            <div className="text-xs text-gray-400 mt-0.5">{fmt(waSent)} msgs enviadas × $0,06</div>
+          </>
+        )}
+      </Block>
+
+      <Block title="Métricas de disparos" tip="Resultados agregados dos disparos regulares (não FUPs). Percentuais calculados sobre o total de enviadas.">
         <MetricsGrid loading={loading} rows={[
           ['Enviadas', stats.sent, null],
           ['Entregues', stats.delivered, sentN],
@@ -130,7 +154,7 @@ export default function StatsPanel({ month, typeFilter, period }: Props) {
         )}
       </Block>
 
-      <Block title="Métricas de FUPs">
+      <Block title="Métricas de FUPs" tip="Resultados exclusivos dos disparos de follow up. Percentuais calculados sobre o total de enviadas nos FUPs.">
         <MetricsGrid loading={loading} rows={[
           ['Enviadas', stats.fup_sent, null],
           ['Entregues', stats.fup_delivered, fupSentN],
@@ -150,6 +174,7 @@ export default function StatsPanel({ month, typeFilter, period }: Props) {
           </div>
         )}
       </Block>
+
     </div>
   );
 }

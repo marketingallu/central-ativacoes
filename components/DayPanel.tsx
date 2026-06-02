@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Activation } from '@/lib/types';
 import ActivationCard from './ActivationCard';
 import ActivationForm from './ActivationForm';
+import Tooltip from './Tooltip';
 
 interface Props {
   date: string;
@@ -63,13 +64,17 @@ export default function DayPanel({ date, onClose, onUpdate }: Props) {
             <h2 className="font-semibold text-[#2E2F39] capitalize">{dateLabel}</h2>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={() => { setEditing(null); setShowForm(true); }}
-              className="bg-[#27AE60] hover:bg-[#219653] text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
-            >
-              + Nova ativação
-            </button>
-            <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none ml-1">×</button>
+            <Tooltip text="Criar nova ativação para este dia" position="bottom">
+              <button
+                onClick={() => { setEditing(null); setShowForm(true); }}
+                className="bg-[#27AE60] hover:bg-[#219653] text-white text-sm font-medium px-3 py-1.5 rounded-lg transition-colors"
+              >
+                + Nova ativação
+              </button>
+            </Tooltip>
+            <Tooltip text="Fechar painel" position="bottom">
+              <button onClick={onClose} className="text-gray-400 hover:text-gray-600 text-2xl leading-none ml-1">×</button>
+            </Tooltip>
           </div>
         </div>
 
