@@ -23,6 +23,7 @@ const EMPTY_FORM = {
   copy: '',
   image_url: '',
   hubspot_flow_url: '',
+  dispatch_category: 'regular',
 };
 
 export default function ActivationForm({ date, activation, onSave, onClose }: Props) {
@@ -53,6 +54,7 @@ export default function ActivationForm({ date, activation, onSave, onClose }: Pr
         copy: activation.copy ?? '',
         image_url: activation.image_url ?? '',
         hubspot_flow_url: activation.hubspot_flow_url ?? '',
+        dispatch_category: activation.dispatch_category ?? 'regular',
       });
       setSchedules(activation.dispatch_schedules ?? []);
       setImagePreview(activation.image_url ?? '');
@@ -114,6 +116,7 @@ export default function ActivationForm({ date, activation, onSave, onClose }: Pr
       image_url: image_url || null,
       copy: form.copy || null,
       hubspot_flow_url: form.hubspot_flow_url || null,
+      dispatch_category: form.dispatch_category || 'regular',
       fup_date: scheduleFup && fupDate ? fupDate : null,
       fup_target_leads: scheduleFup && fupTargetLeads ? fupTargetLeads : null,
       fup_copy: scheduleFup && fupCopy ? fupCopy : null,
@@ -247,6 +250,14 @@ export default function ActivationForm({ date, activation, onSave, onClose }: Pr
             {imagePreview && (
               <img src={imagePreview} alt="preview" className="mt-2 h-20 rounded-lg object-cover" />
             )}
+          </div>
+
+          <div>
+            <label className={labelCls}>Categoria do disparo</label>
+            <select value={form.dispatch_category} onChange={e => set('dispatch_category', e.target.value)} className={inputCls}>
+              <option value="regular">Regular (novos leads)</option>
+              <option value="cross_sell">Cross sell</option>
+            </select>
           </div>
 
           <div>

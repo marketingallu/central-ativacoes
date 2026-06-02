@@ -32,7 +32,9 @@ export async function GET() {
     await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS hubspot_flow_url TEXT`;
     await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS is_fup BOOLEAN DEFAULT false`;
     await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS parent_activation_id UUID REFERENCES activations(id) ON DELETE SET NULL`;
+    await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS parent_date TEXT`;
     await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS fup_target_leads TEXT`;
+    await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS dispatch_category TEXT DEFAULT 'regular'`;
     return NextResponse.json({ ok: true, message: 'Schema criado com sucesso' });
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });

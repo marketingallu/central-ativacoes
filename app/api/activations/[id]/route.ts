@@ -8,6 +8,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS is_fup BOOLEAN DEFAULT false`; } catch { /* ignore */ }
   try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS fup_target_leads TEXT`; } catch { /* ignore */ }
   try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS parent_activation_id UUID`; } catch { /* ignore */ }
+  try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS parent_date TEXT`; } catch { /* ignore */ }
+  try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS dispatch_category TEXT DEFAULT 'regular'`; } catch { /* ignore */ }
   try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS results JSONB DEFAULT '{}'`; } catch { /* ignore */ }
   try {
     const body = await req.json();
@@ -28,7 +30,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         offer_condition = ${offer_condition ?? null}, offer_trigger = ${offer_trigger ?? null},
         focus_product = ${focus_product ?? null}, offer_category = ${offer_category ?? null},
         image_url = ${image_url ?? null}, copy = ${copy ?? null},
-        hubspot_flow_url = ${hubspot_flow_url ?? null}
+        hubspot_flow_url = ${hubspot_flow_url ?? null},
+        dispatch_category = ${body.dispatch_category ?? 'regular'}
       WHERE id = ${params.id}
       RETURNING *
     ` as Activation[];

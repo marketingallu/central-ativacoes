@@ -172,6 +172,9 @@ export default function Calendar() {
               const isSelected = dateStr === selectedDate;
               const goal = goalsByDate[dateStr];
               const isEditingGoal = editingGoalDate === dateStr;
+              const regularCount = acts.filter(a => !a.is_fup && a.dispatch_category !== 'cross_sell').length;
+              const fupCount = acts.filter(a => a.is_fup).length;
+              const crossCount = acts.filter(a => !a.is_fup && a.dispatch_category === 'cross_sell').length;
 
               return (
                 <div key={i} className={`h-28 rounded-lg border flex flex-col transition-all ${
@@ -190,12 +193,28 @@ export default function Calendar() {
                     </span>
 
                     {!loading && (
-                      <div className="flex flex-wrap gap-0.5 mt-auto">
-                        {types.slice(0, 4).map(t => (
-                          <span key={t} className="w-2 h-2 rounded-full" style={{ backgroundColor: TYPE_COLORS[t] }} />
-                        ))}
-                        {types.length > 4 && <span className="text-[9px] text-gray-400">+{types.length - 4}</span>}
-                        {acts.length > 0 && <span className="text-[9px] text-gray-400 w-full">{acts.length} ativ.</span>}
+                      <div className="flex flex-col gap-0.5 mt-auto">
+                        <div className="flex gap-0.5 flex-wrap">
+                          {types.slice(0, 4).map(t => (
+                            <span key={t} className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: TYPE_COLORS[t] }} />
+                          ))}
+                          {types.length > 4 && <span className="text-[8px] text-gray-400">+{types.length - 4}</span>}
+                        </div>
+                        {regularCount > 0 && (
+                          <span className="text-[8px] font-semibold bg-blue-50 text-blue-600 px-1 rounded-sm leading-tight">
+                            {regularCount} novo{regularCount > 1 ? 's' : ''}
+                          </span>
+                        )}
+                        {crossCount > 0 && (
+                          <span className="text-[8px] font-semibold bg-orange-50 text-orange-600 px-1 rounded-sm leading-tight">
+                            {crossCount} cross sell
+                          </span>
+                        )}
+                        {fupCount > 0 && (
+                          <span className="text-[8px] font-semibold bg-purple-50 text-purple-700 px-1 rounded-sm leading-tight">
+                            {fupCount} FUP
+                          </span>
+                        )}
                       </div>
                     )}
                   </button>
@@ -235,17 +254,17 @@ export default function Calendar() {
             })}
           </div>
 
-          <div className="mt-4 flex flex-wrap gap-4 text-xs text-gray-500">
+          <div className="mt-4 flex flex-wrap gap-3 text-xs text-gray-500">
             {Object.entries(TYPE_COLORS).map(([type, color]) => (
               <span key={type} className="flex items-center gap-1.5">
                 <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
                 {TYPE_LABELS[type as ActivationType]}
               </span>
             ))}
-            <span className="flex items-center gap-1.5">
-              <span className="text-[#27AE60]">🎯</span>
-              Meta de disparos (clique para editar)
-            </span>
+            <span className="flex items-center gap-1.5"><span className="text-[8px] bg-blue-50 text-blue-600 font-semibold px-1 rounded-sm">novos</span> Regular</span>
+            <span className="flex items-center gap-1.5"><span className="text-[8px] bg-orange-50 text-orange-600 font-semibold px-1 rounded-sm">CS</span> Cross sell</span>
+            <span className="flex items-center gap-1.5"><span className="text-[8px] bg-purple-50 text-purple-700 font-semibold px-1 rounded-sm">FUP</span> Follow up</span>
+            <span className="flex items-center gap-1.5"><span className="text-[#27AE60]">🎯</span> Meta (clique p/ editar)</span>
           </div>
         </div>
       </div>

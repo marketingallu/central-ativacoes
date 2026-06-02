@@ -9,6 +9,21 @@ function fmtDateBR(dateStr: string) {
   return `${d}/${m}/${y}`;
 }
 
+async function migrate(sql: ReturnType<typeof getSql>) {
+  const alters = [
+    `ALTER TABLE activations ADD COLUMN IF NOT EXISTS hubspot_flow_url TEXT`,
+    `ALTER TABLE activations ADD COLUMN IF NOT EXISTS is_fup BOOLEAN DEFAULT false`,
+    `ALTER TABLE activations ADD COLUMN IF NOT EXISTS fup_target_leads TEXT`,
+    `ALTER TABLE activations ADD COLUMN IF NOT EXISTS parent_activation_id UUID`,
+    `ALTER TABLE activations ADD COLUMN IF NOT EXISTS parent_date TEXT`,
+    `ALTER TABLE activations ADD COLUMN IF NOT EXISTS dispatch_category TEXT DEFAULT 'regular'`,
+    `ALTER TABLE activations ADD COLUMN IF NOT EXISTS results JSONB DEFAULT '{}'`,
+  ];
+  for (const stmt of alters) {
+    try { await sql.unsafe(stmt); } catch { /* ignore */ }
+  }
+}
+
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const month = searchParams.get('month');
@@ -18,9 +33,7 @@ export async function GET(req: NextRequest) {
   try {
     let rows: Activation[];
     if (date) {
-      rows = await sql`
-        SELECT * FROM activations WHERE date = ${date} ORDER BY created_at ASC
-      ` as Activation[];
+      rows = await sql`SELECT * FROM activations WHERE date = ${date} ORDER BY created_at ASC` as Activation[];
     } else if (month) {
       const [year, m] = month.split('-');
       rows = await sql`
@@ -39,35 +52,33 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const sql = getSql();
-  try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS hubspot_flow_url TEXT`; } catch { /* ignore */ }
-  try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS is_fup BOOLEAN DEFAULT false`; } catch { /* ignore */ }
-  try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS fup_target_leads TEXT`; } catch { /* ignore */ }
-  try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS parent_activation_id UUID`; } catch { /* ignore */ }
-  try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS results JSONB DEFAULT '{}'`; } catch { /* ignore */ }
+  await migrate(sql);
   try {
     const body = await req.json();
     const {
       date, type, description, segment, segment_volume, intercom_tag,
       dispatch_schedules, coupon, offer_condition, offer_trigger,
       focus_product, offer_category, image_url, copy, hubspot_flow_url,
+      dispatch_category,
       fup_date, fup_target_leads, fup_copy,
     } = body;
 
     const schedules = JSON.stringify(dispatch_schedules ?? []);
+    const category = dispatch_category || 'regular';
 
     const rows = await sql`
       INSERT INTO activations (
         date, type, description, segment, segment_volume, intercom_tag,
         dispatch_schedules, coupon, offer_condition, offer_trigger,
         focus_product, offer_category, image_url, copy, hubspot_flow_url,
-        is_fup, results
+        is_fup, dispatch_category, results
       ) VALUES (
         ${date}, ${type}, ${description ?? null}, ${segment ?? null},
         ${segment_volume ?? null}, ${intercom_tag ?? null},
         ${schedules}::jsonb, ${coupon ?? null}, ${offer_condition ?? null},
         ${offer_trigger ?? null}, ${focus_product ?? null},
         ${offer_category ?? null}, ${image_url ?? null}, ${copy ?? null},
-        ${hubspot_flow_url ?? null}, false, '{}'::jsonb
+        ${hubspot_flow_url ?? null}, false, ${category}, '{}'::jsonb
       )
       RETURNING *
     ` as Activation[];
@@ -78,13 +89,13 @@ export async function POST(req: NextRequest) {
       const fupDesc = `Follow up do disparo "${description || type}" do dia ${fmtDateBR(date)}`;
       await sql`
         INSERT INTO activations (
-          date, type, description, segment, segment_volume, intercom_tag,
-          dispatch_schedules, copy, is_fup, parent_activation_id, fup_target_leads, results
+          date, type, description, segment, intercom_tag,
+          dispatch_schedules, copy, is_fup, parent_activation_id,
+          parent_date, fup_target_leads, dispatch_category, results
         ) VALUES (
-          ${fup_date}, ${type}, ${fupDesc}, ${segment ?? null},
-          null, ${intercom_tag ?? null},
+          ${fup_date}, ${type}, ${fupDesc}, ${segment ?? null}, ${intercom_tag ?? null},
           '[]'::jsonb, ${fup_copy ?? null},
-          true, ${parent.id}, ${fup_target_leads ?? null}, '{}'::jsonb
+          true, ${parent.id}, ${date}, ${fup_target_leads ?? null}, 'regular', '{}'::jsonb
         )
       `;
     }

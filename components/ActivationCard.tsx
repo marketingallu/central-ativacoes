@@ -4,6 +4,11 @@ import { Activation, DispatchResult } from '@/lib/types';
 import TypeBadge from './TypeBadge';
 import Tooltip from './Tooltip';
 
+function formatDateBR(dateStr: string) {
+  const [, m, d] = dateStr.split('-');
+  return `${d}/${m}`;
+}
+
 interface Props {
   activation: Activation;
   onEdit: (a: Activation) => void;
@@ -70,10 +75,24 @@ export default function ActivationCard({ activation: a, onEdit, onDelete }: Prop
       </div>
 
       {a.is_fup && (
-        <div className="flex items-center gap-1.5 text-xs bg-purple-50 border border-purple-200 rounded-md px-2 py-1 w-fit">
-          <span>🔁</span>
-          <span className="font-medium text-purple-700">Follow up</span>
-          {a.fup_target_leads && <span className="text-purple-500">· {a.fup_target_leads}</span>}
+        <div className="flex flex-col gap-0.5 text-xs bg-purple-50 border border-purple-200 rounded-md px-2 py-1.5 w-fit">
+          <div className="flex items-center gap-1.5">
+            <span>🔁</span>
+            <span className="font-semibold text-purple-700">Follow up</span>
+            {a.parent_date && (
+              <span className="text-purple-500">· do disparo do dia {formatDateBR(a.parent_date)}</span>
+            )}
+          </div>
+          {a.fup_target_leads && (
+            <span className="text-purple-500 pl-5">{a.fup_target_leads}</span>
+          )}
+        </div>
+      )}
+
+      {!a.is_fup && a.dispatch_category === 'cross_sell' && (
+        <div className="flex items-center gap-1.5 text-xs bg-orange-50 border border-orange-200 rounded-md px-2 py-1 w-fit">
+          <span>🔄</span>
+          <span className="font-semibold text-orange-700">Cross sell</span>
         </div>
       )}
 
