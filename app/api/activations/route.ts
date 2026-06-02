@@ -9,22 +9,6 @@ function fmtDateBR(dateStr: string) {
   return `${d}/${m}/${y}`;
 }
 
-async function migrate(sql: ReturnType<typeof getSql>) {
-  const alters = [
-    `ALTER TABLE activations ADD COLUMN IF NOT EXISTS hubspot_flow_url TEXT`,
-    `ALTER TABLE activations ADD COLUMN IF NOT EXISTS is_fup BOOLEAN DEFAULT false`,
-    `ALTER TABLE activations ADD COLUMN IF NOT EXISTS fup_target_leads TEXT`,
-    `ALTER TABLE activations ADD COLUMN IF NOT EXISTS parent_activation_id UUID`,
-    `ALTER TABLE activations ADD COLUMN IF NOT EXISTS parent_date TEXT`,
-    `ALTER TABLE activations ADD COLUMN IF NOT EXISTS dispatch_category TEXT DEFAULT 'regular'`,
-    `ALTER TABLE activations ADD COLUMN IF NOT EXISTS base_temperature TEXT`,
-    `ALTER TABLE activations ADD COLUMN IF NOT EXISTS results JSONB DEFAULT '{}'`,
-  ];
-  for (const stmt of alters) {
-    try { await sql.unsafe(stmt); } catch { /* ignore */ }
-  }
-}
-
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const month = searchParams.get('month');
@@ -53,7 +37,16 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const sql = getSql();
-  await migrate(sql);
+
+  try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS hubspot_flow_url TEXT`; } catch { /* ignore */ }
+  try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS is_fup BOOLEAN DEFAULT false`; } catch { /* ignore */ }
+  try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS fup_target_leads TEXT`; } catch { /* ignore */ }
+  try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS parent_activation_id UUID`; } catch { /* ignore */ }
+  try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS parent_date TEXT`; } catch { /* ignore */ }
+  try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS dispatch_category TEXT DEFAULT 'regular'`; } catch { /* ignore */ }
+  try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS base_temperature TEXT`; } catch { /* ignore */ }
+  try { await sql`ALTER TABLE activations ADD COLUMN IF NOT EXISTS results JSONB DEFAULT '{}'`; } catch { /* ignore */ }
+
   try {
     const body = await req.json();
     const {
@@ -79,7 +72,8 @@ export async function POST(req: NextRequest) {
         ${schedules}::jsonb, ${coupon ?? null}, ${offer_condition ?? null},
         ${offer_trigger ?? null}, ${focus_product ?? null},
         ${offer_category ?? null}, ${image_url ?? null}, ${copy ?? null},
-        ${hubspot_flow_url ?? null}, false, ${category}, ${base_temperature ?? null}, '{}'::jsonb
+        ${hubspot_flow_url ?? null}, false, ${category},
+        ${base_temperature ?? null}, '{}'::jsonb
       )
       RETURNING *
     ` as Activation[];
@@ -103,6 +97,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json({ data: parent }, { status: 201 });
   } catch (err) {
+    console.error('POST activations error:', err);
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }
 }
