@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Activation, ActivationType, TYPE_COLORS, TYPE_LABELS } from '@/lib/types';
 import DayPanel from './DayPanel';
@@ -30,6 +30,7 @@ export default function Calendar() {
   const [period, setPeriod] = useState('month');
   const [editingGoalDate, setEditingGoalDate] = useState<string | null>(null);
   const [goalDraft, setGoalDraft] = useState('');
+  const savingGoalRef = React.useRef(false);
 
   const monthKey = `${year}-${String(month + 1).padStart(2, '0')}`;
 
@@ -69,19 +70,27 @@ export default function Calendar() {
   }
 
   async function saveGoal(dateStr: string) {
+    if (savingGoalRef.current) return;
+    savingGoalRef.current = true;
     const val = parseInt(goalDraft);
     setEditingGoalDate(null);
+    setGoalDraft('');
+    savingGoalRef.current = false;
     if (isNaN(val) || val < 0) return;
     if (val === 0) {
       setGoalsByDate(prev => { const next = { ...prev }; delete next[dateStr]; return next; });
     } else {
       setGoalsByDate(prev => ({ ...prev, [dateStr]: val }));
     }
-    await fetch('/api/goals', {
+    const res = await fetch('/api/goals', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ date: dateStr, goal: val }),
     });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      console.error('saveGoal failed:', err);
+    }
   }
 
   const monthGoalTotal = Object.values(goalsByDate).reduce((a, b) => a + b, 0);
