@@ -72,7 +72,11 @@ export default function Calendar() {
     const val = parseInt(goalDraft);
     setEditingGoalDate(null);
     if (isNaN(val) || val < 0) return;
-    setGoalsByDate(prev => val === 0 ? (({ [dateStr]: _, ...rest }) => rest)(prev) : { ...prev, [dateStr]: val });
+    if (val === 0) {
+      setGoalsByDate(prev => { const next = { ...prev }; delete next[dateStr]; return next; });
+    } else {
+      setGoalsByDate(prev => ({ ...prev, [dateStr]: val }));
+    }
     await fetch('/api/goals', {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
