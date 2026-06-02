@@ -93,6 +93,17 @@ export default function ActivationCard({ activation: a, onEdit, onDelete }: Prop
         <div className="text-xs text-gray-500">Cupom: <strong className="text-[#2E2F39]">{a.coupon}</strong></div>
       )}
 
+      {a.hubspot_flow_url && (
+        <a
+          href={a.hubspot_flow_url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-1 text-xs text-orange-500 hover:text-orange-600 hover:underline font-medium"
+        >
+          🔗 Fluxo HubSpot
+        </a>
+      )}
+
       {copy && (
         <div className="text-xs text-gray-600 bg-[#F7F8FA] rounded p-2">
           {showFullCopy ? copy : truncatedCopy}

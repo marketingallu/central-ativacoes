@@ -35,6 +35,7 @@ export interface Activation {
   offer_category: string | null;
   image_url: string | null;
   copy: string | null;
+  hubspot_flow_url: string | null;
   results: DispatchResult | null;
   created_at: string;
 }

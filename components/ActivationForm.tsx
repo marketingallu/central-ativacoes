@@ -22,6 +22,7 @@ const EMPTY_FORM = {
   offer_category: '',
   copy: '',
   image_url: '',
+  hubspot_flow_url: '',
 };
 
 export default function ActivationForm({ date, activation, onSave, onClose }: Props) {
@@ -47,6 +48,7 @@ export default function ActivationForm({ date, activation, onSave, onClose }: Pr
         offer_category: activation.offer_category ?? '',
         copy: activation.copy ?? '',
         image_url: activation.image_url ?? '',
+        hubspot_flow_url: activation.hubspot_flow_url ?? '',
       });
       setSchedules(activation.dispatch_schedules ?? []);
       setImagePreview(activation.image_url ?? '');
@@ -107,6 +109,7 @@ export default function ActivationForm({ date, activation, onSave, onClose }: Pr
       offer_category: form.offer_category || null,
       image_url: image_url || null,
       copy: form.copy || null,
+      hubspot_flow_url: form.hubspot_flow_url || null,
     };
 
     const url = activation ? `/api/activations/${activation.id}` : '/api/activations';
@@ -237,6 +240,11 @@ export default function ActivationForm({ date, activation, onSave, onClose }: Pr
             {imagePreview && (
               <img src={imagePreview} alt="preview" className="mt-2 h-20 rounded-lg object-cover" />
             )}
+          </div>
+
+          <div>
+            <label className={labelCls}>Link do fluxo HubSpot</label>
+            <input type="url" value={form.hubspot_flow_url} onChange={e => set('hubspot_flow_url', e.target.value)} className={inputCls} placeholder="https://app.hubspot.com/workflows/..." />
           </div>
 
           <div>

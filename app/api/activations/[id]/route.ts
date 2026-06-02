@@ -9,7 +9,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const {
       date, type, description, segment, segment_volume, intercom_tag,
       dispatch_schedules, coupon, offer_condition, offer_trigger,
-      focus_product, offer_category, image_url, copy,
+      focus_product, offer_category, image_url, copy, hubspot_flow_url,
     } = body;
 
     const schedules = JSON.stringify(dispatch_schedules ?? []);
@@ -22,7 +22,8 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
         dispatch_schedules = ${schedules}::jsonb, coupon = ${coupon ?? null},
         offer_condition = ${offer_condition ?? null}, offer_trigger = ${offer_trigger ?? null},
         focus_product = ${focus_product ?? null}, offer_category = ${offer_category ?? null},
-        image_url = ${image_url ?? null}, copy = ${copy ?? null}
+        image_url = ${image_url ?? null}, copy = ${copy ?? null},
+        hubspot_flow_url = ${hubspot_flow_url ?? null}
       WHERE id = ${params.id}
       RETURNING *
     ` as Activation[];
