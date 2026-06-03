@@ -59,5 +59,5 @@ export const TYPE_COLORS: Record<ActivationType, string> = {
   email: '#3498db',
   instagram_story: '#d85ab9',
   instagram_post: '#d85ab9',
-  app_push: '#a8a9b8',
+  app_push: '#f78639',
 };

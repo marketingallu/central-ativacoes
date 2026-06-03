@@ -220,7 +220,7 @@ export default function Calendar() {
 
                     {!loading && acts.length > 0 && (
                       <div className="flex flex-col gap-0.5 mt-1">
-                        {acts.map(a => {
+                        {acts.slice(0, 5).map(a => {
                           const color = getActColor(a);
                           return (
                             <span
@@ -236,6 +236,11 @@ export default function Calendar() {
                             </span>
                           );
                         })}
+                        {acts.length > 5 && (
+                          <span className="text-[8px] text-gray-400 leading-tight">
+                            +{acts.length - 5} mais
+                          </span>
+                        )}
                       </div>
                     )}
                   </button>
