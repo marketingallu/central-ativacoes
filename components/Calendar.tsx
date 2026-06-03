@@ -34,6 +34,7 @@ function getActLabel(a: Activation): string {
 }
 import DayPanel from './DayPanel';
 import StatsPanel from './StatsPanel';
+import MetricsSection from './MetricsSection';
 import Tooltip from './Tooltip';
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
@@ -280,6 +281,7 @@ export default function Calendar() {
             })}
           </div>
 
+          <MetricsSection month={monthKey} typeFilter={typeFilter} period={period} />
         </div>
       </div>
 
