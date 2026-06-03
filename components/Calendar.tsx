@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Activation, ActivationType, TYPE_COLORS, TYPE_LABELS } from '@/lib/types';
 
 const TYPE_SHORT: Record<ActivationType, string> = {
-  whatsapp: '💬 WPP',
+  whatsapp: 'WPP',
   email: 'Email',
   instagram_story: 'Story',
   instagram_post: 'Post',
@@ -18,7 +18,7 @@ const TEMP_LABEL: Record<string, string> = {
 };
 
 function getActColor(a: Activation): string {
-  if (a.is_fup) return '#a8a9b8';
+  if (a.is_fup) return '#f78639';
   if (a.dispatch_category === 'cross_sell') return '#8d44ad';
   return TYPE_COLORS[a.type];
 }
