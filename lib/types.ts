@@ -55,9 +55,9 @@ export const TYPE_LABELS: Record<ActivationType, string> = {
 };
 
 export const TYPE_COLORS: Record<ActivationType, string> = {
-  whatsapp: '#25D366',
-  email: '#4A90D9',
-  instagram_story: '#E1306C',
-  instagram_post: '#833AB4',
-  app_push: '#FF9500',
+  whatsapp: '#4bd184',
+  email: '#3498db',
+  instagram_story: '#d85ab9',
+  instagram_post: '#d85ab9',
+  app_push: '#a8a9b8',
 };

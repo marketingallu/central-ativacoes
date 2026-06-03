@@ -4,7 +4,7 @@ import Image from 'next/image';
 import { Activation, ActivationType, TYPE_COLORS, TYPE_LABELS } from '@/lib/types';
 
 const TYPE_SHORT: Record<ActivationType, string> = {
-  whatsapp: 'WPP',
+  whatsapp: '💬 WPP',
   email: 'Email',
   instagram_story: 'Story',
   instagram_post: 'Post',
@@ -195,7 +195,7 @@ export default function Calendar() {
               const isEditingGoal = editingGoalDate === dateStr;
 
               return (
-                <div key={i} className={`h-28 rounded-lg border flex flex-col transition-all ${
+                <div key={i} className={`h-36 rounded-lg border flex flex-col transition-all ${
                   isSelected
                     ? 'border-[#27AE60] bg-[#f0faf4] shadow-md'
                     : 'border-[#E5E7EB] bg-white hover:border-[#27AE60] hover:shadow-sm'
@@ -270,21 +270,6 @@ export default function Calendar() {
           </div>
 
           <div className="mt-4 flex flex-wrap gap-3 text-xs text-gray-500">
-            {(Object.entries(TYPE_COLORS) as [ActivationType, string][]).map(([type, color]) => (
-              <span key={type} className="flex items-center gap-1.5">
-                <span
-                  className="text-[8px] font-semibold px-1 py-px rounded-sm"
-                  style={{ backgroundColor: color + '22', color, borderLeft: `2px solid ${color}` }}
-                >
-                  {TYPE_SHORT[type]}
-                </span>
-                {TYPE_LABELS[type]}
-              </span>
-            ))}
-            <span className="flex items-center gap-1.5">
-              <span className="text-[8px] font-semibold px-1 py-px rounded-sm" style={{ backgroundColor: '#25D36622', color: '#25D366', borderLeft: '2px solid #25D366' }}>WPP · Quente</span>
-              temperatura da base
-            </span>
             <span className="flex items-center gap-1.5"><span className="text-[#27AE60]">🎯</span> Meta (clique p/ editar)</span>
           </div>
         </div>
