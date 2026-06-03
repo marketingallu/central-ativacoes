@@ -2,6 +2,28 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 import { Activation, ActivationType, TYPE_COLORS, TYPE_LABELS } from '@/lib/types';
+
+const TYPE_SHORT: Record<ActivationType, string> = {
+  whatsapp: 'WPP',
+  email: 'Email',
+  instagram_story: 'Story',
+  instagram_post: 'Post',
+  app_push: 'Push',
+};
+
+const TEMP_LABEL: Record<string, string> = {
+  quente: 'Quente',
+  frio: 'Frio',
+  morno: 'Morno',
+};
+
+function getActLabel(a: Activation): string {
+  const base = TYPE_SHORT[a.type];
+  if (a.type === 'whatsapp' && a.base_temperature) {
+    return `${base} · ${TEMP_LABEL[a.base_temperature] ?? a.base_temperature}`;
+  }
+  return base;
+}
 import DayPanel from './DayPanel';
 import StatsPanel from './StatsPanel';
 import Tooltip from './Tooltip';
@@ -188,18 +210,26 @@ export default function Calendar() {
                       {day}
                     </span>
 
-                    {!loading && (
-                      <div className="flex flex-col gap-0.5 mt-auto">
-                        {acts.map((act, idx) => {
-                          const tempEmoji = act.base_temperature === 'frio' ? '🧊' : act.base_temperature === 'morno' ? '🌤' : act.base_temperature === 'quente' ? '🔥' : '';
-                          const label = act.is_fup ? 'FUP' : act.dispatch_category === 'cross_sell' ? 'Cross-sell' : TYPE_LABELS[act.type];
-                          return (
-                            <div key={idx} className="flex items-center gap-0.5 text-[7px] font-semibold px-1 py-0.5 rounded-sm leading-tight text-white" style={{ backgroundColor: TYPE_COLORS[act.type] }}>
-                              <span>{label}</span>
-                              {tempEmoji && <span>{tempEmoji}</span>}
-                            </div>
-                          );
-                        })}
+                    {!loading && acts.length > 0 && (
+                      <div className="flex flex-col gap-0.5 mt-1">
+                        {acts.slice(0, 3).map(a => (
+                          <span
+                            key={a.id}
+                            className="text-[8px] font-semibold px-1 py-px rounded-sm leading-tight truncate"
+                            style={{
+                              backgroundColor: TYPE_COLORS[a.type] + '22',
+                              color: TYPE_COLORS[a.type],
+                              borderLeft: `2px solid ${TYPE_COLORS[a.type]}`,
+                            }}
+                          >
+                            {getActLabel(a)}
+                          </span>
+                        ))}
+                        {acts.length > 3 && (
+                          <span className="text-[8px] text-gray-400 leading-tight">
+                            +{acts.length - 3} mais
+                          </span>
+                        )}
                       </div>
                     )}
                   </button>
@@ -240,15 +270,21 @@ export default function Calendar() {
           </div>
 
           <div className="mt-4 flex flex-wrap gap-3 text-xs text-gray-500">
-            {Object.entries(TYPE_COLORS).map(([type, color]) => (
+            {(Object.entries(TYPE_COLORS) as [ActivationType, string][]).map(([type, color]) => (
               <span key={type} className="flex items-center gap-1.5">
-                <span className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: color }} />
-                {TYPE_LABELS[type as ActivationType]}
+                <span
+                  className="text-[8px] font-semibold px-1 py-px rounded-sm"
+                  style={{ backgroundColor: color + '22', color, borderLeft: `2px solid ${color}` }}
+                >
+                  {TYPE_SHORT[type]}
+                </span>
+                {TYPE_LABELS[type]}
               </span>
             ))}
-            <span className="flex items-center gap-1.5"><span className="text-[8px] bg-blue-50 text-blue-600 font-semibold px-1 rounded-sm">novos</span> Regular</span>
-            <span className="flex items-center gap-1.5"><span className="text-[8px] bg-orange-50 text-orange-600 font-semibold px-1 rounded-sm">CS</span> Cross sell</span>
-            <span className="flex items-center gap-1.5"><span className="text-[8px] bg-purple-50 text-purple-700 font-semibold px-1 rounded-sm">FUP</span> Follow up</span>
+            <span className="flex items-center gap-1.5">
+              <span className="text-[8px] font-semibold px-1 py-px rounded-sm" style={{ backgroundColor: '#25D36622', color: '#25D366', borderLeft: '2px solid #25D366' }}>WPP · Quente</span>
+              temperatura da base
+            </span>
             <span className="flex items-center gap-1.5"><span className="text-[#27AE60]">🎯</span> Meta (clique p/ editar)</span>
           </div>
         </div>
