@@ -17,7 +17,15 @@ const TEMP_LABEL: Record<string, string> = {
   morno: 'Morno',
 };
 
+function getActColor(a: Activation): string {
+  if (a.is_fup) return '#a8a9b8';
+  if (a.dispatch_category === 'cross_sell') return '#8d44ad';
+  return TYPE_COLORS[a.type];
+}
+
 function getActLabel(a: Activation): string {
+  if (a.is_fup) return 'FUP';
+  if (a.dispatch_category === 'cross_sell') return 'Cross-sell';
   const base = TYPE_SHORT[a.type];
   if (a.type === 'whatsapp' && a.base_temperature) {
     return `${base} · ${TEMP_LABEL[a.base_temperature] ?? a.base_temperature}`;
@@ -212,19 +220,22 @@ export default function Calendar() {
 
                     {!loading && acts.length > 0 && (
                       <div className="flex flex-col gap-0.5 mt-1">
-                        {acts.map(a => (
-                          <span
-                            key={a.id}
-                            className="text-[8px] font-semibold px-1 py-px rounded-sm leading-tight truncate"
-                            style={{
-                              backgroundColor: TYPE_COLORS[a.type] + '22',
-                              color: TYPE_COLORS[a.type],
-                              borderLeft: `2px solid ${TYPE_COLORS[a.type]}`,
-                            }}
-                          >
-                            {getActLabel(a)}
-                          </span>
-                        ))}
+                        {acts.map(a => {
+                          const color = getActColor(a);
+                          return (
+                            <span
+                              key={a.id}
+                              className="text-[8px] font-semibold px-1 py-px rounded-sm leading-tight truncate"
+                              style={{
+                                backgroundColor: color + '22',
+                                color,
+                                borderLeft: `2px solid ${color}`,
+                              }}
+                            >
+                              {getActLabel(a)}
+                            </span>
+                          );
+                        })}
                       </div>
                     )}
                   </button>
