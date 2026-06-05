@@ -34,7 +34,6 @@ interface Props {
   month: string;        // "2026-06"
   typeFilter: string;
   period: string;
-  monthGoalTotal: number;
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -103,7 +102,7 @@ function pace(value: number, monthKey: string): number {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function StatsPanel({ month, typeFilter, period, monthGoalTotal }: Props) {
+export default function StatsPanel({ month, typeFilter, period }: Props) {
   const [stats,   setStats]   = useState<Stats>(EMPTY_STATS);
   const [rev,     setRev]     = useState<RevenueData>(EMPTY_REV);
   const [loading, setLoading] = useState(true);

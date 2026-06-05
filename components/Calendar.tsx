@@ -124,7 +124,6 @@ export default function Calendar() {
     }
   }
 
-  const monthGoalTotal = Object.values(goalsByDate).reduce((a, b) => a + b, 0);
 
   const firstDay = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
@@ -172,7 +171,7 @@ export default function Calendar() {
 
       <div className="flex gap-4 p-4 max-w-7xl mx-auto">
         <aside className="w-60 shrink-0">
-          <StatsPanel month={monthKey} typeFilter={typeFilter} period={period} monthGoalTotal={monthGoalTotal} />
+          <StatsPanel month={monthKey} typeFilter={typeFilter} period={period} />
         </aside>
 
         <div className="flex-1 min-w-0">
